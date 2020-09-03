@@ -1,0 +1,20 @@
+{
+  "name": "node_server",
+  "version": "1.0.0",
+  "description": "basic server made with core node modules for testing purposes.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server",
+    "test": "nodemon server"
+  },
+  "keywords": [
+    "http",
+    "server",
+    "nodejs"
+  ],
+  "author": "Arijit Nandi",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
