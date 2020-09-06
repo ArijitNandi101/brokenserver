@@ -9,36 +9,36 @@ class RouteEventEmitter extends EventEmitter{
 			post: {}
 		};
 	}
+	onPath(method,path,callbackFunction) {
+		if(this.routes[method]){
+			this.routes[method][path] = callbackFunction;
+		}else{
+			console.log("method "+method+" for path "+path+" can not be defined");
+		}
+	}
+	emitPath(method,path,req,res) {
+		if(method in this.routes && path in this.routes[method]){
+			this.routes[method][path](req,res);
+		}else{
+			res.write(method+" method on requested path "+path+" is forbidden");
+		}
+	}
 };
 const router = new RouteEventEmitter();
-
 function routeRequest(req,res){
-	router.emit(req.method,req,res);
+	router.emit('request',req,res);
 
 };
-router.on('GET',function(req,res){
-	if(req.url in this.routes.get){
-		this.routes.get[req.url](req,res);
-	}else{
-		res.write(req.method+"method on requested path "+req.url+" is forbidden");
-		res.end();
-	}
-});
-
-router.on('POST',function(req,res){
-	if(req.url in this.routes.post){
-		this.routes.post[req.url](req,res);
-	}else{
-		res.write(req.method+" not allowed on "+req.url);
-	}
+router.on('request',function(req,res){
+	this.emitPath(req.method.toLowerCase(),req.url,req,res);
 });
 
 function get(path,callbackFunction){
-	router.routes.get[path]=callbackFunction;
+	router.onPath('get',path,callbackFunction);
 };
 
 function post(path,callbackFunction){
-	router.routes.post[path]=callbackFunction;
+	router.onPath('post',path,callbackFunction);
 };
 
 module.exports = {
