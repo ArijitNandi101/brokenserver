@@ -27,3 +27,8 @@ route.get("/",(req,res) => {
 	res.write(JSON.stringify(req.headers)+"<br/>");
 	res.end();
 });
+
+route.use("/",(req,res,next) => {
+	console.log("middleware "+req.url+" has been invoked");
+	next();
+});
