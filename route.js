@@ -6,37 +6,23 @@ class RouteEventEmitter extends EventEmitter{
 	constructor(){
 		super();
 		this.middlewareManager = middleware.getNewManager();
-		this.routes = {
-			get: {},
-			post: {}
-		};
+		this.middlewareManager.addDefault('get',function(req,res){
+			res.write(req.method + " request for path " + req.url + " is forbidden!");
+		});
 		this.on('request',function(req,res) {
-			this.middlewareManager.run(this.middlewareManager.match(req.url),req,res);
-			this.emitPath(req.method.toLowerCase(),req.url,req,res);
+			this.middlewareManager.run(this.middlewareManager.match(req.method.toLowerCase(),req.url),req,res);
 		});
 	}
 	
-	addMiddleware(path,middleware){
-		if(this.middlewareManager.add(path,middleware)){
+	onMiddleware(path,middleware){
+		if(this.middlewareManager.addMiddleware(path,middleware)){
 			console.log("invalid middleware "+middleware.toString()+" for path "+path);
 		}
 	}
 
-	onPath(method,path,callbackFunction) {
-		
-		if(this.routes[method]){
-			this.routes[method][path] = callbackFunction;
-		}else{
-			console.log("method "+method+" for path "+path+" can not be defined");
-		}
-	}
-	
-	emitPath(method,path,req,res) {
-		if(method in this.routes && path in this.routes[method]){
-			this.routes[method][path](req,res);
-		}else{
-			res.write(method+" method on requested path "+path+" is forbidden");
-		}
+	onMethod(method,path,callbackFunction) {
+		if(this.middlewareManager.addMethod(method,path,callbackFunction))
+			console.log("invalid method" + method + " for path " + path);
 	}
 };
 
@@ -47,20 +33,38 @@ function routeRequest(req,res){
 
 };
 
-function use(path,middleware){
+function use(){
+	var path = '/';
 	if(arguments.length === 1){
-		middleware = arguments[0];
-		path = '/';
+		 var middlewareIndex = 0;
+	}else{
+		path = arguments[0];
+		var middlewareIndex = 1;
 	}
-	router.addMiddleware(path,middleware);
+	for(let i=middlewareIndex;i<arguments.length;i++)
+		router.onMiddleware(path,arguments[i]);
 }
 
-function get(path,callbackFunction){
-	router.onPath('get',path,callbackFunction);
+function get(){
+	var path = '/';
+	if(arguments.length <= 1 ){ 
+		console.log("bad routing arguments for get: ");
+		return;
+	}
+	path = arguments[0];	
+	for(let i=1;i<arguments.length;i++)
+		router.onMethod('get',path,arguments[i]);
 };
 
-function post(path,callbackFunction){
-	router.onPath('post',path,callbackFunction);
+function post(){
+	var path = '/';
+	if(arguments.length <= 1 ){ 
+		console.log("bad routing arguments for get: ");
+		return;
+	}
+	path = arguments[0];
+	for(let i=1;i<arguments.length;i++)
+		router.onMethod('post',path,arguments[i]);
 };
 
 module.exports = {
