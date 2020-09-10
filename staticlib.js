@@ -16,13 +16,11 @@ function loadStatic(directory){
 				res.write("filename:'"+filename+"' not found");
 				next();
 			}else {
-				console.log(directory+'/'+filename);
 				var stream = fs.createReadStream(directory+"/"+filename,'utf8');
 				stream.on('data',(chunk) => { res.write(chunk); });
 				stream.on('end',() => { next(); });
 			}
 		});
-		console.log("outer");
 	}
 };
 

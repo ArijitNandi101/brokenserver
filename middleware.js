@@ -53,14 +53,14 @@ MiddlewareManager.prototype.match = function(method,url){
 		});
 	}
 	if(!middlewareChain.length && !methodChain.length) methodChain = this.routes[method]['default'];
-	console.log(middlewareChain,methodChain);
+	//console.log(middlewareChain,methodChain);
 	return {middleware: middlewareChain,method: methodChain}
 }
 
 MiddlewareManager.prototype.run = function(chains,req,res){
 	let i=0;
 	var next = function() {
-		console.log("running middleware ",i,chains.middleware.length);
+		//console.log("running middleware ",i,chains.middleware.length);
 		if(i<chains.middleware.length) chains.middleware[i++](req,res,next);
 		else{
 			i=0;
@@ -68,7 +68,7 @@ MiddlewareManager.prototype.run = function(chains,req,res){
 		}
 	}
 	var ender = function() {
-		console.log("running method ",i,chains.method.length);
+		//console.log("running method ",i,chains.method.length);
 		if(i<chains.method.length) chains.method[i++](req,res,ender);
 		else res.end();
 	}
@@ -78,7 +78,6 @@ MiddlewareManager.prototype.run = function(chains,req,res){
 		return;
 	}
 	next.call(this);
-	console.log("middleware outer");
 }
 
 module.exports.getNewManager = function() {
