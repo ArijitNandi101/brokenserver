@@ -7,11 +7,14 @@ const route = require('./route');
 const staticlib = require('./staticlib');
 //const logger = require('./logger');
 
+var router = route.Router();
+
 module.exports.listen = function(port){
 	const server = http.createServer((req,res) => {
 		console.log(req.url,req.method);
-		route.routeRequest(req,res);
+		router(req,res,function(){});
 	});
+
 	const PORT = port || process.env.PORT || 8080;
 	server.listen(PORT,
 		() => { console.log(`server started and now listening on port ${PORT} ...`); }
@@ -19,15 +22,15 @@ module.exports.listen = function(port){
 } 
 
 module.exports.get = function(path,callbackFunction) {
-	route.get(path,callbackFunction);
+	router.get(path,callbackFunction);
 }
 
 module.exports.post = function(path,callbackFunction) {
-	route.post(path,callbackFunction);
+	router.post(path,callbackFunction);
 }
 
 module.exports.use = function(path,middleware) {
-	route.use(path,middleware);
+	router.use(path,middleware);
 }
 
 module.exports.static = staticlib.loadStatic;

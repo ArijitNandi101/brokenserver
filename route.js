@@ -10,7 +10,11 @@ class RouteEventEmitter extends EventEmitter{
 			res.write(req.method + " request for path " + req.url + " is forbidden!");
 		});
 		this.on('request',function(req,res) {
-			this.middlewareManager.run(this.middlewareManager.match(req.method.toLowerCase(),req.url),req,res);
+			this.middlewareManager.run(
+				this.middlewareManager.match(
+					req.method.toLowerCase(),req.url
+				),
+			req,res);
 		});
 	}
 	
@@ -26,50 +30,54 @@ class RouteEventEmitter extends EventEmitter{
 	}
 };
 
-const router = new RouteEventEmitter();
+function Router(){
+	var routerMiddleware = function(req,res,next) {
+		routerMiddleware.router.emit('request',req,res);
+		next();
+	};
 
-function routeRequest(req,res){
-	router.emit('request',req,res);
+	routerMiddleware.__proto__.router = new RouteEventEmitter();
+	console.log(routerMiddleware.router);
+	routerMiddleware.__proto__.routeRequest = function(req,res){
+		this.router.emit('request',req,res);
 
-};
+	};
 
-function use(){
-	var path = '/';
-	if(arguments.length === 1){
-		 var middlewareIndex = 0;
-	}else{
+	routerMiddleware.__proto__.use = function(){
+		var path = '/';
+		if(arguments.length === 1){
+			var middlewareIndex = 0;
+		}else{
+			path = arguments[0];
+			var middlewareIndex = 1;
+		}
+		for(let i=middlewareIndex;i<arguments.length;i++)
+			this.router.onMiddleware(path,arguments[i]);
+	}
+
+	routerMiddleware.__proto__.get = function(){
+		var path = '/';
+		if(arguments.length <= 1 ){ 
+			console.log("bad routing arguments for get: ");
+			return;
+		}
+		path = arguments[0];	
+		for(let i=1;i<arguments.length;i++)
+			this.router.onMethod('get',path,arguments[i]);
+	};
+
+	routerMiddleware.__proto__.post = function(){
+		var path = '/';
+		if(arguments.length <= 1 ){ 
+			console.log("bad routing arguments for get: ");
+			return;
+		}
 		path = arguments[0];
-		var middlewareIndex = 1;
-	}
-	for(let i=middlewareIndex;i<arguments.length;i++)
-		router.onMiddleware(path,arguments[i]);
+		for(let i=1;i<arguments.length;i++)
+			this.router.onMethod('post',path,arguments[i]);
+	};
+	return routerMiddleware;
 }
-
-function get(){
-	var path = '/';
-	if(arguments.length <= 1 ){ 
-		console.log("bad routing arguments for get: ");
-		return;
-	}
-	path = arguments[0];	
-	for(let i=1;i<arguments.length;i++)
-		router.onMethod('get',path,arguments[i]);
-};
-
-function post(){
-	var path = '/';
-	if(arguments.length <= 1 ){ 
-		console.log("bad routing arguments for get: ");
-		return;
-	}
-	path = arguments[0];
-	for(let i=1;i<arguments.length;i++)
-		router.onMethod('post',path,arguments[i]);
-};
-
 module.exports = {
-	routeRequest,
-	use,
-	get,
-	post
-};
+	 Router: Router
+}
