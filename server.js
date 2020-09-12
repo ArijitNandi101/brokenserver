@@ -9,49 +9,61 @@ const lib = require('./lib');
 const settingsManager = require('./settingsmanager');
 //const logger = require('./logger');
 
-var router = route.Router();
-module.exports.set = function(key,value){
-	settingsManager.set(key,value);
+
+function Application(){
+	this.router = route.Router();
+	this.settingsManager = settingsManager;
+}
+
+Application.prototype.set = function(key,value){
+	this.settingsManager.set(key,value);
 };
 
-module.exports.listen = function(port){
+
+Application.prototype.listen = function(port){
 	const server = http.createServer((req,res) => {
 		//console.log(req.url,req.method);
-		router(req,res,function(){});
+		this.router(req,res,function(){});
 	});
 
 	const PORT = port || process.env.PORT || 8080;
 	server.listen(PORT,
 		() => { console.log(`server started and now listening on port ${PORT} ...`); }
 	);
+	this.server = server;
+	return server;
 };
 
-module.exports.get = function(path,callbackFunction) {
+Application.prototype.get = function(path,callbackFunction) {
 	if(arguments.length === 1){
-		return settingsManager.get(arguments[0]);
+		return this.settingsManager.get(arguments[0]);
 	}
-	router.get(path,callbackFunction);
+	this.router.get(path,callbackFunction);
 	return null;
 };
 
-module.exports.post = function(path,callbackFunction) {
-	router.post(path,callbackFunction);
+Application.prototype.post = function(path,callbackFunction) {
+	this.router.post(path,callbackFunction);
 };
 
-module.exports.use = function(path,middleware) {
-	router.use(path,middleware);
+Application.prototype.use = function(path,middleware) {
+	this.router.use(path,middleware);
 };
+
+module.exports = function() {
+	return new Application();
+}
 
 module.exports.static = lib.loadStatic;
 
 /////////////////////////////////////////////////////////////////
-exports.get("/",(req,res) => {
+var brokenserver = module.exports;
+var app = brokenserver();
+app.listen();
+app.get("/",(req,res) => {
 	res.writeHead(200, {'Content-Type':'text/html'});
 	res.write(req.url+"<br/>");
 	res.write(req.method+"<br/>");
 	res.write(JSON.stringify(req.headers)+"<br/>");
-	console.log("get request write" + req.url);
 });
-exports.use("/assets",exports.static(__dirname + "/public"));
-
-exports.listen();
+app.use("/assets",brokenserver.static(__dirname + "/public"));

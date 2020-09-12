@@ -9,7 +9,8 @@ function loadStatic(directory){
 		fs.readdir(directory,function(err,files) {
 			if(err){ 
 				console.log("error in loading directory: ",err);
-				return;
+				res.write("file " + filename + " not found");
+				next();
 			}
 			else if(filename == '' || !files.includes(filename)){
 				res.write("filename:'"+filename+"' not found");
