@@ -1,4 +1,7 @@
 "use strict";
+
+				/* ROUTE.JS */
+
 const EventEmitter = require('events');
 const middleware = require('./middleware');
 
@@ -37,7 +40,7 @@ function Router(){
 	};
 
 	routerMiddleware.__proto__.router = new RouteEventEmitter();
-	console.log(routerMiddleware.router);
+	
 	routerMiddleware.__proto__.routeRequest = function(req,res){
 		this.router.emit('request',req,res);
 

@@ -6,7 +6,6 @@ const fs = require('fs');
 function loadStatic(directory){
 	return function(req,res,next) {
 		var filename = path.posix.basename(req.url);
-		console.log("middleware4");
 		fs.readdir(directory,function(err,files) {
 			if(err){ 
 				console.log("error in loading directory: ",err);
